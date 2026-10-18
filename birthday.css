@@ -1,0 +1,1501 @@
+/* ============================================================
+   HAPPY BIRTHDAY — a birthday film in four acts
+   Vanilla + GSAP. One page, one continuous piece:
+     1. a beating heart you open with a tap
+     2. it falls, and bursts into a flood of rose
+     3. a kinetic wish hinges up out of that colour
+     4. a gold light blooms, and a tree grows into a heart
+   One grain + vignette lens sits over all of it.
+   ============================================================ */
+
+:root{
+  /* --- warm paper (Act 1 + the tree's dawn) --- */
+  --paper-0:  #fff6ee;
+  --paper-1:  #f9e2d2;
+  --paper-2:  #f2c9b8;
+
+  /* --- rose flood (Acts 2–3) --- */
+  --rose-deep: #a80f43;
+  --rose:      #d4235c;
+  --rose-lift: #ff5f86;
+  --wine:      #6e0a31;
+
+  /* --- accents / ink --- */
+  --gold-1:    #ffcf6a;
+  --gold-2:    #e8a23d;
+  --ink:       #7a4a55;   /* dusty rose ink        */
+  --ink-soft:  #a9808a;   /* muted eyebrow / sub   */
+  --cream:     #fff3ea;
+
+  --ease-out:  cubic-bezier(.2,.7,.2,1);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html, body{ height:100%; }
+
+body{
+  background:#12060c;                 /* seam colour under everything */
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  cursor:auto;
+}
+
+.scene{ position:fixed; inset:0; overflow:hidden; }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
+/* ============================================================
+   THE TREE CANVAS (Act 4) — z0, transparent until it plays
+   ============================================================ */
+.tree{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  display:block;
+  z-index:1;
+}
+
+/* ============================================================
+   ACT 1 — THE INVITATION
+   ============================================================ */
+.hero{
+  position:absolute; inset:0;
+  z-index:3;
+  overflow:hidden;
+}
+/* the warm field the heart sits on */
+.hero__bg{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(120% 88% at 50% 24%, #fff8f1 0%, var(--paper-0) 38%, var(--paper-1) 74%, var(--paper-2) 100%);
+}
+.hero__bg::after{               /* a soft warm pool of light behind the heart */
+  content:""; position:absolute; left:50%; top:44%;
+  width:min(78vw,720px); aspect-ratio:1; transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(255,190,150,.55), rgba(255,150,170,.16) 46%, transparent 70%);
+  filter:blur(6px);
+}
+
+/* drifting light motes (JS fills this with a few spans) */
+.hero__motes{ position:absolute; inset:0; pointer-events:none; }
+.mote{
+  position:absolute; border-radius:50%;
+  background:radial-gradient(circle, rgba(255,236,214,.9), rgba(255,206,180,.15) 55%, transparent 72%);
+  will-change:transform, opacity;
+}
+
+.hero__eyebrow{
+  position:absolute; top:13%; left:0; right:0;
+  text-align:center;
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-style:italic; font-weight:600;
+  font-size:clamp(15px, 3.6vw, 26px);
+  letter-spacing:.06em;
+  color:#a85069;
+  text-shadow:0 1px 10px rgba(255,248,241,.9);
+  opacity:0;                          /* GSAP reveals */
+}
+
+/* ---- the target heart (GSAP animates .target on the hit → fall → burst) ---- */
+.targetWrap{
+  position:absolute; top:33%; left:0; right:0;
+  display:flex; justify-content:center;
+  transform:translateY(-50%);         /* centre at 33% — wrap is NOT animated */
+  pointer-events:none;
+}
+.target{
+  position:relative;
+  width:clamp(120px, 27vw, 208px);
+  aspect-ratio:100/92;
+  will-change:transform;
+  transform-origin:50% 60%;
+  pointer-events:auto;
+  cursor:pointer;
+  outline:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.target:hover .target__heart,
+.target:focus-visible .target__heart{
+  transform:scale(1.06);
+  filter:drop-shadow(0 0 20px rgba(255,100,140,.8)) drop-shadow(0 14px 28px rgba(168,15,64,.45));
+}
+.target:hover .heart__glow,
+.target:focus-visible .heart__glow{
+  opacity:1;
+  transform:translate(-50%,-50%) scale(1.15);
+}
+.target__heart{ position:absolute; inset:0; display:block; transition:transform .2s ease, filter .2s ease; }
+
+/* radial bloom behind the heart — swells on the beat */
+.heart__glow{
+  position:absolute; left:50%; top:52%;
+  width:230%; aspect-ratio:1; transform:translate(-50%,-50%) scale(1);
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(255,120,150,.55), rgba(255,90,130,.18) 42%, transparent 68%);
+  filter:blur(4px);
+  pointer-events:none;
+  will-change:transform, opacity;
+  transition:transform .2s ease, opacity .2s ease;
+}
+.heart__svg{
+  width:100%; height:100%; display:block;
+  transform-origin:50% 60%;           /* the beat scales THIS, not the wrapper */
+  filter:
+    drop-shadow(0 10px 22px rgba(168,15,64,.34))
+    drop-shadow(0 3px 6px rgba(120,10,48,.30));
+  will-change:transform;
+}
+
+/* ---- the bow + arrow rig ----
+   Placed lower-left and rotated by JS to aim at the heart, so the shot travels
+   on a DIAGONAL. The whole rig (left/top + rotation around the grip) is set in
+   JS from measured geometry; everything below is in the rig's own space. */
+.archery{
+  position:absolute; top:0; left:0;    /* JS sets left/top so the grip anchors */
+  width:clamp(100px, 18vw, 168px);     /* smaller, daintier bow — delicate against the heart */
+  cursor:grab;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:none;                   /* we own the drag gesture */
+  will-change:transform;
+}
+.archery:active{ cursor:grabbing; }
+.archery:focus-visible{ outline:none; }
+.archery:focus-visible .bow{ filter:drop-shadow(0 0 0 3px rgba(255,255,255,.85)) drop-shadow(0 10px 18px rgba(120,50,20,.4)); }
+.bow{
+  display:block; width:100%; height:auto;
+  filter:drop-shadow(0 12px 18px rgba(90,40,15,.3));
+  overflow:visible;
+}
+
+/* the aim line rides inside the rig, so it points straight at the heart */
+.aim{
+  position:absolute; left:50%; bottom:32%;
+  width:2px; height:190%; margin-left:-1px;
+  transform-origin:bottom center;
+  background:linear-gradient(0deg, rgba(255,214,150,.6) 0%, rgba(255,150,170,.22) 52%, transparent 78%);
+  opacity:0; pointer-events:none;
+}
+
+/* the arrow overlaps the bow at the nock and flies to the heart */
+.arrow{
+  position:absolute; left:0; right:0; margin-inline:auto;
+  bottom:36%;                          /* JS re-anchors the tail to the nock */
+  width:17.5%; height:auto;
+  overflow:visible;
+  will-change:transform;
+  filter:drop-shadow(0 5px 7px rgba(90,40,15,.36));
+}
+.arrow__wings{ transform-box:fill-box; transform-origin:50% 90%; }
+.arrow__wings .wingL,
+.arrow__wings .wingR{ transform-box:fill-box; }
+.wingL{ transform-origin:88% 60%; animation:flapL 2.6s ease-in-out infinite; }
+.wingR{ transform-origin:12% 60%; animation:flapR 2.6s ease-in-out infinite; }
+@keyframes flapL{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-11deg); } }
+@keyframes flapR{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(11deg); } }
+
+/* ---- the draw / release hint ---- */
+.hero__hint{
+  position:absolute; bottom:8.5%; left:0; right:0;
+  text-align:center;
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-weight:600; font-style:italic;
+  font-size:clamp(13px, 3.1vw, 19px);
+  letter-spacing:.16em; text-transform:uppercase;
+  color:#b06a7c;
+  opacity:0;                          /* GSAP reveals */
+  cursor:pointer;
+  pointer-events:auto;
+  transition:color .2s ease, transform .2s ease;
+}
+.hero__hint:hover{
+  color:#8a2846;
+  transform:translateY(-1px);
+}
+.hero__ring{ display:none; }
+
+/* ============================================================
+   ACT 2 — THE FLOOD (the burst circle)
+   ============================================================ */
+.flood{
+  position:absolute; left:50%; top:50%;
+  width:140px; height:140px; margin:-70px 0 0 -70px;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 34%, var(--rose-lift), var(--rose) 46%, var(--rose-deep) 100%);
+  z-index:5;
+  opacity:0; transform:scale(.001);
+  will-change:transform, opacity;
+  pointer-events:none;
+}
+
+/* ============================================================
+   ACT 3 — THE WISH FIELD (rose world + kinetic type)
+   ============================================================ */
+.field{
+  position:absolute; inset:0;
+  z-index:4;                          /* below the flood; revealed once it covers */
+  opacity:0;
+  /* purely decorative — must never intercept the tap on the heart beneath it.
+     An opacity:0 element is still hit-testable, so without this the invisible
+     field (z4, above the hero z3) swallows every Act-1 tap. */
+  pointer-events:none;
+  overflow:hidden;
+  background:
+    radial-gradient(120% 100% at 50% 8%, #d5265f 0%, var(--rose) 42%, var(--rose-deep) 78%, var(--wine) 100%);
+  color:#fff;
+}
+.blob{
+  position:absolute; border-radius:50%;
+  filter:blur(46px); opacity:0;
+  mix-blend-mode:screen;
+  will-change:transform, opacity;
+}
+.blob--1{ width:58vmax; height:58vmax; left:-18vmax; top:-16vmax;
+  background:radial-gradient(circle, rgba(255,130,160,.9), transparent 62%); }
+.blob--2{ width:46vmax; height:46vmax; right:-14vmax; top:22vmax;
+  background:radial-gradient(circle, rgba(255,90,120,.75), transparent 64%); }
+.blob--3{ width:52vmax; height:52vmax; left:24vmax; bottom:-22vmax;
+  background:radial-gradient(circle, rgba(180,20,70,.8), transparent 66%); }
+
+/* faint grid — a hair of parallax gives the flood depth, not flatness */
+.fgrid{
+  position:absolute; inset:-6%;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size:clamp(38px,7vw,74px) clamp(38px,7vw,74px);
+  will-change:transform;
+}
+.fvignette{
+  position:absolute; inset:0;
+  background:radial-gradient(128% 96% at 50% 44%, transparent 50%, rgba(70,6,28,.5) 100%);
+}
+
+/* the camera — everything on the flood rides a slow continuous push */
+.camera{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:clamp(4px,1.2vh,12px);
+  padding:0 6vw; text-align:center;
+  will-change:transform;
+}
+.kEyebrow{
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-style:italic; font-weight:500;
+  font-size:clamp(15px, 3.6vw, 27px);
+  letter-spacing:.08em;
+  color:#ffd7c8;
+  opacity:0; transform:translateY(10px);
+  margin-bottom:clamp(2px,1vh,10px);
+}
+
+.headline{ font-family:"Fraunces", Georgia, serif; line-height:.92; }
+.hl__line{ display:block; }
+/* the mask each headline word hinges out of. Padded to clear ascenders +
+   descenders so glyphs never peek past the clip edge when parked. */
+.mask{
+  display:inline-block; overflow:hidden;
+  padding:.14em .06em;
+  margin:-.14em -.06em;
+}
+.hl__word{
+  display:inline-block;
+  font-weight:900;
+  font-size:clamp(52px, 15vw, 168px);
+  letter-spacing:-.02em;
+  color:#fff6f1;
+  text-shadow:0 6px 34px rgba(60,4,24,.34), 0 2px 3px rgba(90,8,36,.42);
+}
+/* each glyph hinges up on its own bottom edge, under its own perspective */
+.hl__ch{ display:inline-block; will-change:transform; }
+
+/* gold hand-drawn underline under the second word */
+.uline{
+  width:clamp(150px, 40vw, 380px); height:auto;
+  margin-top:clamp(4px,1.4vh,14px);
+  color:var(--gold-1);
+  filter:drop-shadow(0 2px 8px rgba(255,180,90,.5));
+}
+.kSub{
+  margin-top:clamp(12px,2.4vh,26px);
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-weight:500; font-style:italic;
+  font-size:clamp(14px, 3.4vw, 24px);
+  letter-spacing:.05em;
+  color:#ffdfd2;
+  opacity:0; transform:translateY(10px);
+}
+
+/* cinema bars — closed = black, they open as the wish lands */
+.bar{
+  position:absolute; left:0; right:0; height:16vh;
+  background:#12040b; z-index:3; will-change:transform; pointer-events:none;
+}
+.bar--top{ top:0; }
+.bar--bot{ bottom:0; }
+
+/* ============================================================
+   THE HANDOFF BLOOM (rose wish → dawn of the tree)
+   ============================================================ */
+.bloom{
+  position:absolute; left:50%; top:50%;
+  width:60px; height:60px; margin:-30px 0 0 -30px;
+  border-radius:50%;
+  background:radial-gradient(circle, #fff 0%, #fff2d6 30%, rgba(255,214,150,.85) 55%, rgba(255,190,150,0) 74%);
+  z-index:8; opacity:0; transform:scale(.001);
+  will-change:transform, opacity; pointer-events:none;
+}
+
+/* ============================================================
+   ACT 4 — THE HAND-LETTERED WISH (over the tree)
+   ============================================================ */
+.wish{
+  position:absolute;
+  left:5.5%; bottom:10%;
+  max-width:46%;
+  z-index:6;
+  pointer-events:none;
+  color:var(--ink);
+  /* hard gate: wish__hero keeps opacity:1 (its clip-path drives the write-on),
+     so without this its clipped sliver + drop-shadow would leak into Acts 1–3. */
+  visibility:hidden;
+}
+.wish.is-in{ visibility:visible; }
+.wish::before{
+  content:""; position:absolute; inset:-18% -24% -24% -16%;
+  background:radial-gradient(84% 98% at 34% 52%, rgba(255,250,243,.94), rgba(255,250,243,.6) 48%, rgba(255,250,243,0) 80%);
+  z-index:-1; opacity:0; transition:opacity 1s ease;
+}
+.wish.is-in::before{ opacity:1; }
+.wish__eyebrow{
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-style:italic; font-weight:600;
+  font-size:clamp(13px, 3.2vw, 24px);
+  letter-spacing:.05em; color:#9c4f63;
+  text-shadow:0 1px 2px #fff8f1, 0 0 8px rgba(255,248,241,.95);
+}
+.wish__heroWrap{ position:relative; display:inline-block; }
+.wish__heroWrap::before{
+  content:""; position:absolute; left:-12%; right:-12%; top:-26%; bottom:-22%;
+  background:radial-gradient(60% 70% at 46% 52%, rgba(255,214,168,.5), rgba(255,150,150,.2) 52%, transparent 74%);
+  filter:blur(14px); z-index:-1; opacity:0; pointer-events:none;
+}
+.wish__heroWrap::after{
+  content:"\2726";
+  position:absolute; right:-1%; top:-14%;
+  font-size:clamp(15px, 3.6vw, 32px);
+  color:#ffe1a0; text-shadow:0 0 12px rgba(255,205,120,.95);
+  opacity:0; pointer-events:none;
+}
+.wish__hero{
+  font-family:"Great Vibes", cursive; font-weight:400;
+  font-size:clamp(40px, 9.6vw, 86px);
+  line-height:.98; margin:-.02em 0 .06em;
+  /* one consistent rose, top-lit — every letter reads the same (no per-glyph
+     colour shift, which is what made the old rose→gold version look messy).
+     Deep enough to hold up against the tree's bright bloom behind it. */
+  background:linear-gradient(180deg, #e85a83 0%, #c41f52 50%, #9c0f42 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  /* a crisp cream edge for legibility over the tree + one soft drop */
+  filter:
+    drop-shadow(0 1px 1px rgba(255,252,248,.98))
+    drop-shadow(0 2px 6px rgba(130,18,55,.45));
+  clip-path:inset(0 100% -28% -10%);
+  transform-origin:8% 60%;             /* breathe from the start of the line */
+}
+.wish__rule{
+  display:block; width:clamp(46px, 13vw, 110px); height:2px;
+  margin:.12em 0 .48em;
+  background:linear-gradient(90deg, var(--gold-2), rgba(232,162,61,0));
+  box-shadow:0 0 8px rgba(255,247,240,.9);
+  transform-origin:left center;
+}
+.wish__sub{
+  font-family:"Cormorant Garamond", Georgia, serif;
+  font-weight:600; font-size:clamp(12px, 2.9vw, 20px);
+  letter-spacing:.03em; color:#6e3f4a;
+  text-shadow:0 1px 2px #fff8f1, 0 0 8px rgba(255,248,241,.98);
+}
+.wish__eyebrow, .wish__rule, .wish__sub{
+  opacity:0; transform:translateY(12px); filter:blur(5px);
+  transition:opacity .8s ease, transform .9s var(--ease-out), filter .8s ease;
+}
+.wish__rule{ transform:translateY(12px) scaleX(.3); }
+.wish.is-in .wish__eyebrow,
+.wish.is-in .wish__sub{ opacity:1; transform:translateY(0); filter:blur(0); }
+.wish.is-in .wish__rule{ opacity:1; transform:translateY(0) scaleX(1); }
+.wish.is-in .wish__rule{ transition-delay:1.35s; }
+.wish.is-in .wish__sub{  transition-delay:1.55s; }
+.wish.is-in .wish__hero{
+  animation:write 1.2s cubic-bezier(.62,.04,.24,1) .35s forwards,
+            wishBreath 4s ease-in-out 1.9s infinite;
+}
+/* a gentle living breath — transform only, so it can never wash the fill out */
+@keyframes wishBreath{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.02); } }
+.wish.is-in .wish__heroWrap::before{ animation:hlin .8s ease .3s forwards, hlpulse 3.4s ease-in-out 1.7s infinite; }
+.wish.is-in .wish__heroWrap::after{ animation:twk 2.6s ease-in-out 1.6s infinite; }
+@keyframes write{ from{ clip-path:inset(0 100% -28% -10%); } to{ clip-path:inset(0 -10% -28% -10%); } }
+@keyframes sheen{ 0%,18%{ background-position:0% 50%; } 60%,100%{ background-position:100% 50%; } }
+@keyframes hlin{ from{ opacity:0; transform:scale(.86); } to{ opacity:.92; transform:scale(1); } }
+@keyframes hlpulse{ 0%,100%{ opacity:.72; } 50%{ opacity:1; } }
+@keyframes twk{ 0%,100%{ opacity:0; transform:scale(.5) rotate(-12deg); } 45%{ opacity:1; transform:scale(1.05) rotate(16deg); } }
+
+/* ============================================================
+   REPLAY
+   ============================================================ */
+.replay{
+  position:absolute; right:20px; bottom:18px; z-index:7;
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 15px 9px 12px; border-radius:999px;
+  font:600 12.5px/1 "Cormorant Garamond", Georgia, serif; letter-spacing:.12em; text-transform:uppercase;
+  color:#8a4a5a; background:rgba(255,248,242,.72);
+  border:1px solid rgba(150,60,80,.18);
+  box-shadow:0 6px 20px -8px rgba(120,20,50,.4);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  cursor:pointer; opacity:0; transform:translateY(8px);
+  transition:opacity .5s ease, transform .5s var(--ease-out), background .3s ease;
+}
+.replay.is-shown{ opacity:1; transform:translateY(0); }
+.replay:hover{ background:rgba(255,252,248,.92); }
+.replay svg{ opacity:.8; }
+
+/* ============================================================
+   THE LENS — grain + vignette over every act
+   ============================================================ */
+.grade{ position:absolute; inset:0; z-index:9; pointer-events:none; }
+.grade__vignette{
+  position:absolute; inset:0;
+  background:radial-gradient(125% 95% at 50% 42%, transparent 54%, rgba(60,18,30,.14) 84%, rgba(40,12,22,.3) 100%);
+  mix-blend-mode:multiply;
+}
+.grade__grain{
+  position:absolute; inset:0;
+  background:url('/textures/grain.png') repeat;
+  background-size:300px; opacity:.05; mix-blend-mode:overlay;
+}
+
+/* ============================================================
+   REDUCED MOTION — skip the film, hand over the finished tree
+   ============================================================ */
+@media (prefers-reduced-motion: reduce){
+  .hero, .flood, .field, .bloom, .hero__ring{ display:none !important; }
+  .wish__eyebrow, .wish__rule, .wish__sub{ opacity:1; transform:none; filter:none; transition:none; }
+  .wish__hero{ clip-path:none; filter:drop-shadow(0 0 5px rgba(255,252,248,.98)) drop-shadow(0 2px 4px rgba(130,18,55,.5)) drop-shadow(0 4px 14px rgba(150,28,70,.32)); }
+  .wish.is-in .wish__hero{ animation:none; }
+  .wish.is-in .wish__heroWrap::before{ animation:none; opacity:.9; }
+  .wish.is-in .wish__heroWrap::after{ animation:none; opacity:0; }
+}
+
+/* ============================================================
+   TOP BAR (Personalize + Sound)
+   ============================================================ */
+.topbar {
+  position: fixed;
+  top: 18px;
+  left: 20px;
+  right: 20px;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+.topbar__btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(13px, 2.8vw, 16px);
+  letter-spacing: 0.06em;
+  color: #7e3a4e;
+  background: rgba(255, 248, 242, 0.82);
+  border: 1px solid rgba(168, 80, 105, 0.22);
+  box-shadow: 0 4px 16px -4px rgba(120, 20, 50, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.topbar__btn:hover {
+  background: rgba(255, 252, 248, 0.98);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -4px rgba(120, 20, 50, 0.32);
+  color: #5c142b;
+}
+.topbar__btn:active {
+  transform: translateY(1px);
+}
+.topbar__btn svg {
+  opacity: 0.85;
+}
+
+/* ============================================================
+   PERSONALIZE MODAL
+   ============================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(28, 10, 18, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-card {
+  background: linear-gradient(150deg, #fffdfa 0%, #fdf0e6 100%);
+  border: 1px solid rgba(216, 130, 160, 0.4);
+  border-radius: 24px;
+  padding: 30px 26px;
+  width: min(92vw, 420px);
+  box-shadow: 0 24px 50px -12px rgba(110, 12, 48, 0.38);
+  transform: scale(0.92) translateY(14px);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  color: #5c2834;
+}
+.modal-backdrop.is-open .modal-card {
+  transform: scale(1) translateY(0);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.modal-title {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 24px;
+  color: #9c1244;
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #a86476;
+  padding: 4px;
+  border-radius: 50%;
+  transition: color 0.2s;
+}
+.modal-close:hover {
+  color: #4a1020;
+}
+.modal-desc {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 15.5px;
+  color: #8c5866;
+  margin-bottom: 22px;
+  line-height: 1.4;
+}
+.form-group {
+  margin-bottom: 24px;
+}
+.form-label {
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #6a2839;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(216, 30, 87, 0.28);
+  background: rgba(255, 255, 255, 0.95);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #4a1525;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus {
+  border-color: #d81e57;
+  box-shadow: 0 0 0 3px rgba(216, 30, 87, 0.16);
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+.modal-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.modal-btn--primary {
+  background: linear-gradient(135deg, #e83a6b, #c4184a);
+  color: #fff;
+  border: none;
+  box-shadow: 0 6px 18px rgba(196, 24, 74, 0.32);
+}
+.modal-btn--primary:hover {
+  background: linear-gradient(135deg, #f04878, #d41e52);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(196, 24, 74, 0.42);
+}
+.modal-btn--share {
+  background: rgba(255, 255, 255, 0.9);
+  color: #7a3044;
+  border: 1px solid rgba(196, 24, 74, 0.26);
+}
+.modal-btn--share:hover {
+  background: #fff;
+  color: #4a1020;
+  border-color: rgba(196, 24, 74, 0.45);
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(45, 12, 24, 0.92);
+  color: #fff1f4;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 180, 200, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 120;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.toast.is-shown {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================================
+   FRONTPAGE — MUSIC DEDICATION CARD & SCAN FORM
+   ============================================================ */
+.frontpage {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: radial-gradient(120% 90% at 50% 12%, #fff8f1 0%, #fae5d5 40%, #f4d0c0 75%, #ecc0b0 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px 60px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.6s;
+}
+
+.frontpage.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.frontpage__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 180, 200, 0.45) 0%, transparent 65%);
+}
+
+.frontpage__container {
+  position: relative;
+  z-index: 2;
+  width: min(94vw, 560px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.frontpage__header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.frontpage__tag {
+  display: inline-block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(12px, 2.6vw, 15px);
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: #ad3b5b;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.frontpage__title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(32px, 7.5vw, 54px);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #d81e57 0%, #a80f43 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(216, 30, 87, 0.25));
+  margin-bottom: 8px;
+}
+
+.frontpage__subtitle {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(14px, 3.2vw, 19px);
+  font-style: italic;
+  font-weight: 600;
+  color: #8c4c5e;
+}
+
+/* Music Card Container */
+.music-card {
+  width: 100%;
+}
+
+.music-card__glass {
+  background: rgba(255, 252, 248, 0.88);
+  border: 1px solid rgba(220, 140, 165, 0.45);
+  border-radius: 28px;
+  padding: 26px 22px;
+  box-shadow: 0 20px 48px -10px rgba(130, 15, 55, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.music-card__glass:hover {
+  box-shadow: 0 24px 56px -8px rgba(130, 15, 55, 0.34), 0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+}
+
+/* Card Top: Vinyl & Meta */
+.music-card__top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.music-card__cover {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+}
+
+.cover-art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(120, 10, 48, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.cover-art__svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cover-title {
+  position: absolute;
+  bottom: 8px;
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.05em;
+}
+
+.vinyl-record {
+  position: absolute;
+  top: 4px;
+  right: -24px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2a2a2a 0%, #151515 50%, #000 100%);
+  border: 2px solid #333;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: transform 0.6s ease;
+}
+
+.music-card__glass:hover .vinyl-record,
+.music-card.is-playing .vinyl-record {
+  transform: translateX(18px) rotate(45deg);
+}
+
+.music-card.is-playing .vinyl-record {
+  animation: vinylSpin 4s linear infinite;
+}
+
+@keyframes vinylSpin {
+  from { transform: translateX(18px) rotate(0deg); }
+  to { transform: translateX(18px) rotate(360deg); }
+}
+
+.vinyl-center {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e82962, #9c0f42);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: 3px solid #111;
+}
+
+.music-card__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.song-badge {
+  display: inline-block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #c4184a;
+  background: rgba(232, 41, 98, 0.12);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.song-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 800;
+  font-size: clamp(22px, 4.5vw, 30px);
+  color: #4a1222;
+  margin-bottom: 4px;
+  line-height: 1.1;
+}
+
+.song-artists, .song-music {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(13px, 2.8vw, 16px);
+  color: #723c4a;
+  line-height: 1.35;
+}
+
+.music-card__status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 13.5px;
+  font-style: italic;
+  color: #9c4f63;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* SCAN BARCODE & QR SECTION */
+.scan-section {
+  background: rgba(255, 245, 248, 0.9);
+  border: 1.5px dashed rgba(216, 30, 87, 0.35);
+  border-radius: 18px;
+  padding: 18px 16px;
+  margin-bottom: 16px;
+}
+
+.scan-bar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid rgba(220, 160, 180, 0.3);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(120, 20, 50, 0.08);
+}
+
+.scan-beam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #ff4d80 0%, #ff0055 50%, #ff4d80 100%);
+  box-shadow: 0 0 16px 4px rgba(255, 0, 85, 0.7);
+  left: -20px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.scan-beam.is-scanning {
+  opacity: 1;
+  animation: scanSweep 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes scanSweep {
+  from { left: 0%; }
+  to { left: 98%; }
+}
+
+.soundwave-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  flex: 1;
+}
+
+.sw-line {
+  flex: 1;
+  background: linear-gradient(180deg, #e82962, #a80f43);
+  border-radius: 999px;
+  height: 20%;
+  transition: height 0.2s ease;
+}
+
+.sw-1 { height: 35%; } .sw-2 { height: 70%; } .sw-3 { height: 45%; } .sw-4 { height: 90%; }
+.sw-5 { height: 60%; } .sw-6 { height: 100%; } .sw-7 { height: 75%; } .sw-8 { height: 40%; }
+.sw-9 { height: 85%; } .sw-10 { height: 50%; } .sw-11 { height: 95%; } .sw-12 { height: 65%; }
+.sw-13 { height: 40%; } .sw-14 { height: 80%; } .sw-15 { height: 55%; } .sw-16 { height: 30%; }
+
+.music-card.is-playing .sw-line {
+  animation: soundwaveBounce 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes soundwaveBounce {
+  0% { transform: scaleY(0.4); }
+  100% { transform: scaleY(1.3); }
+}
+
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.qr-img {
+  width: 62px;
+  height: 62px;
+  border-radius: 8px;
+  border: 1px solid rgba(216, 30, 87, 0.2);
+}
+
+.qr-label {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8c4c5e;
+}
+
+/* Actions in Scan Card */
+.scan-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.btn-scan {
+  flex: 1.3;
+  padding: 13px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #e82962, #be1248);
+  color: #fff;
+  border: none;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(14px, 3.2vw, 17px);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(216, 30, 87, 0.38);
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-scan:hover {
+  background: linear-gradient(135deg, #ff3875, #d01852);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(216, 30, 87, 0.48);
+}
+
+.btn-scan:active {
+  transform: translateY(1px);
+}
+
+.btn-lyrics {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 14px;
+  background: #fff;
+  color: #8a2846;
+  border: 1.5px solid rgba(216, 30, 87, 0.3);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(14px, 3.2vw, 17px);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-lyrics:hover {
+  background: #fff5f8;
+  border-color: #d81e57;
+  color: #60102a;
+}
+
+/* YouTube Player Container */
+.player-wrapper {
+  margin-top: 18px;
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 180, 200, 0.2);
+}
+
+.player-header {
+  padding: 10px 16px;
+  background: #180810;
+  color: #ffd6e2;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 13.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close-player {
+  background: none;
+  border: none;
+  color: #ff9abb;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.video-responsive {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+  overflow: hidden;
+}
+
+.video-responsive iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Lyrics Drawer */
+.lyrics-drawer {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(220, 160, 180, 0.4);
+  border-radius: 18px;
+  padding: 22px 20px;
+  max-height: 380px;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(100, 10, 40, 0.08);
+}
+
+.lyrics-header {
+  text-align: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(216, 30, 87, 0.15);
+}
+
+.lyrics-title {
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: #9c1244;
+  margin-bottom: 4px;
+}
+
+.lyrics-credits {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+  color: #8c4c5e;
+}
+
+.lyrics-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lyric-block {
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(15px, 3.4vw, 18px);
+  line-height: 1.6;
+}
+
+.lyric-block--female {
+  background: rgba(255, 235, 242, 0.7);
+  border-left: 3px solid #e82962;
+  color: #6a1430;
+}
+
+.lyric-block--male {
+  background: rgba(240, 244, 255, 0.7);
+  border-left: 3px solid #3b82f6;
+  color: #1e3a8a;
+}
+
+.lyric-block--duet {
+  background: linear-gradient(135deg, rgba(255, 235, 242, 0.7), rgba(240, 244, 255, 0.7));
+  border-left: 3px solid #9333ea;
+  color: #4a154b;
+}
+
+.singer-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.singer-tag--female {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.singer-tag--male {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Proceed to Cupid Wish Button */
+.frontpage__footer {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.btn-enter-gift {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 50%, #dc2626 100%);
+  color: #fff;
+  border: none;
+  font-family: "Fraunces", Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(16px, 3.8vw, 20px);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 12px 30px rgba(234, 88, 12, 0.42), 0 0 0 2px rgba(255, 255, 255, 0.4) inset;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-enter-gift:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 16px 38px rgba(234, 88, 12, 0.54), 0 0 0 2px rgba(255, 255, 255, 0.6) inset;
+}
+
+.btn-enter-gift:active {
+  transform: translateY(1px);
+}
+
+.frontpage__hint {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 14.5px;
+  color: #8c4c5e;
+  margin-top: 8px;
+}
+
+.topbar__btn--primary {
+  background: linear-gradient(135deg, #e82962, #a80f43);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 16px rgba(168, 15, 67, 0.35);
+}
+
+.topbar__btn--primary:hover {
+  background: linear-gradient(135deg, #f03f75, #c0144d);
+  color: #fff;
+}
+
+/* ============================================================
+   ROMANTIC QUOTES & LOVE CARDS (Opening & Surprise Gift)
+   ============================================================ */
+/* 1. Opening Frontpage Love Quote Card */
+.love-quote-card {
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.love-quote-card__inner {
+  background: rgba(255, 245, 248, 0.94);
+  border: 1.5px solid rgba(224, 76, 120, 0.38);
+  border-radius: 22px;
+  padding: 20px 22px;
+  box-shadow: 0 10px 28px rgba(160, 20, 65, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.love-quote-card__inner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(160, 20, 65, 0.18);
+}
+
+.love-quote-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #e82962, #be1248);
+  color: #fff;
+  border-radius: 999px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(216, 30, 87, 0.28);
+}
+
+.love-quote-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lq-line {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(15px, 3.4vw, 18px);
+  font-style: italic;
+  font-weight: 600;
+  color: #5c1828;
+  line-height: 1.45;
+}
+
+.lq-line--highlight {
+  font-weight: 700;
+  color: #9c0f42;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(216, 30, 87, 0.25);
+  text-shadow: 0 0 8px rgba(255, 220, 230, 0.8);
+}
+
+/* 2. Act 1 Hero Opening Quote Note */
+.hero__quote {
+  position: absolute;
+  top: 18.5%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.hero__quote span {
+  display: inline-block;
+  padding: 5px 14px;
+  background: rgba(255, 248, 242, 0.85);
+  border: 1px solid rgba(216, 30, 87, 0.25);
+  border-radius: 999px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(13px, 2.8vw, 16px);
+  font-style: italic;
+  font-weight: 600;
+  color: #9c284b;
+  box-shadow: 0 4px 14px rgba(120, 20, 50, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: heroQuoteFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes heroQuoteFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4px); }
+}
+
+/* 3. Act 4 Surprise Gift Quote Card */
+.wish__love-card {
+  margin-top: 18px;
+  background: rgba(255, 252, 248, 0.92);
+  border: 1px solid rgba(216, 120, 150, 0.4);
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 30px rgba(120, 15, 50, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: auto;
+  max-width: 480px;
+  opacity: 0;
+  transform: translateY(14px);
+  filter: blur(4px);
+  transition: opacity 0.9s ease 1.7s, transform 0.9s var(--ease-out) 1.7s, filter 0.8s ease 1.7s;
+}
+
+.wish.is-in .wish__love-card {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+.wish__love-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: linear-gradient(135deg, #e82962, #a80f43);
+  color: #fff;
+  border-radius: 999px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.wish__love-body p {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(13px, 2.7vw, 16px);
+  font-style: italic;
+  font-weight: 600;
+  color: #5c1828;
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+
+.wish__love-highlight {
+  font-weight: 700 !important;
+  color: #9c0f42 !important;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(216, 30, 87, 0.25);
+}
+
+/* Act 4 Floating Actions (Replay + Love Note) */
+.act4-actions {
+  position: absolute;
+  right: 20px;
+  bottom: 18px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.act4-actions .replay {
+  position: static;
+}
+
+.love-letter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font: 600 12.5px/1 "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a1a3e;
+  background: rgba(255, 235, 242, 0.88);
+  border: 1px solid rgba(216, 30, 87, 0.28);
+  box-shadow: 0 6px 20px -8px rgba(120, 20, 50, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.love-letter-btn:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(120, 20, 50, 0.45);
+}
+
+

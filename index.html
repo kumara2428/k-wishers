@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Happy Birthday ♥ — a little film</title>
+  <meta name="description" content="A cinematic birthday film in four acts: a beating heart you open with a tap, a rush of colour, a kinetic wish, and a tree that blooms into a heart of petals." />
+  <meta name="theme-color" content="#f7e7dc" />
+  <link rel="icon" type="image/png" href="./favicon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&display=swap" rel="stylesheet" />
+
+  <script>document.documentElement.classList.add('js')</script>
+  <link rel="stylesheet" href="./birthday.css" />
+</head>
+<body>
+  <!-- Top Bar Controls -->
+  <header class="topbar">
+    <button class="topbar__btn topbar__btn--primary" id="switchViewBtn" type="button" aria-label="Switch between Song Card and Cupid Card">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+        <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+      </svg>
+      <span id="switchViewText">🎵 Dedication Song</span>
+    </button>
+    <button class="topbar__btn" id="personalizeBtn" type="button" aria-label="Personalize this birthday wish">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+        <path d="M20 6h-2.18c.11-.31.18-.65.18-1a3 3 0 0 0-3-3c-1.31 0-2.42.83-2.83 2H11.83C11.42 2.83 10.31 2 9 2a3 3 0 0 0-3 3c0 .35.07.69.18 1H4a2 2 0 0 0-2 2v3h20V8a2 2 0 0 0-2-2zm-5-2a1 1 0 0 1 1 1 1 1 0 0 1-1 1h-2a1 1 0 0 1 1-1h1zm-6 0a1 1 0 0 1 1 1 1 1 0 0 1-1 1H8a1 1 0 0 1 1-1zm11 8H13v9h7a2 2 0 0 0 2-2v-7zm-9 9v-9H4v7a2 2 0 0 0 2 2h5z"/>
+      </svg>
+      <span id="recipientBadge">For: Ammu &amp; Kaviya</span>
+    </button>
+    <button class="topbar__btn" id="soundBtn" type="button" aria-label="Toggle sound">
+      <svg id="soundIconOn" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+      <svg id="soundIconOff" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" style="display:none;">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+      </svg>
+      <span id="soundLabel">Sound</span>
+    </button>
+  </header>
+
+  <!-- FRONT PAGE: MUSIC DEDICATION CARD & SCAN FORM -->
+  <section class="frontpage" id="frontpage" aria-label="Music Dedication & Birthday Card">
+    <div class="frontpage__bg" aria-hidden="true"></div>
+    <div class="frontpage__container">
+      
+      <div class="frontpage__header">
+        <span class="frontpage__tag">✦ A Special Birthday Dedication ✦</span>
+        <h1 class="frontpage__title" id="frontTitle">Happy Birthday Ammu 💖</h1>
+        <p class="frontpage__subtitle">A heartfelt melody dedicated to you on your special day</p>
+      </div>
+
+      <!-- ROMANTIC QUOTE / LOVE LETTER CARD (OPENING PAGE) -->
+      <div class="love-quote-card" id="frontLoveQuote">
+        <div class="love-quote-card__inner">
+          <div class="love-quote-badge">
+            <span class="badge-icon">❤️</span>
+            <span class="badge-text">1. You Are My Everything</span>
+          </div>
+          <div class="love-quote-text">
+            <p class="lq-line">You are not just my girlfriend, you are my whole world. ❤️</p>
+            <p class="lq-line">Your happiness means more to me than my own. 🥹</p>
+            <p class="lq-line">Even when everything goes wrong, your love gives me strength.</p>
+            <p class="lq-line">I don't need a perfect life, I just need you beside me.</p>
+            <p class="lq-line lq-line--highlight">Because my heart has chosen you, forever and always. 💍❤️</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- THE SCAN & PLAY MUSIC CARD -->
+      <div class="music-card">
+        <div class="music-card__glass">
+          
+          <div class="music-card__top">
+            <div class="music-card__cover">
+              <div class="vinyl-record" id="vinylRecord" aria-hidden="true">
+                <div class="vinyl-groove"></div>
+                <div class="vinyl-center">♥</div>
+              </div>
+              <div class="cover-art">
+                <svg viewBox="0 0 100 100" class="cover-art__svg" aria-hidden="true">
+                  <defs>
+                    <radialGradient id="covGrad" cx="38%" cy="30%" r="72%">
+                      <stop offset="0%" stop-color="#ffb3cc" />
+                      <stop offset="55%" stop-color="#e82962" />
+                      <stop offset="100%" stop-color="#720a2e" />
+                    </radialGradient>
+                  </defs>
+                  <rect width="100" height="100" rx="14" fill="url(#covGrad)" />
+                  <path d="M50 72 C32 58 20 46 20 32 C20 20 28 14 37 14 C44 14 48 18 50 24 C52 18 56 14 63 14 C72 14 80 20 80 32 C80 46 68 58 50 72 Z" fill="#ffffff" opacity="0.92" />
+                </svg>
+                <span class="cover-title">Idhudhaan</span>
+              </div>
+            </div>
+
+            <div class="music-card__meta">
+              <span class="song-badge">Special Birthday Song</span>
+              <h2 class="song-title">Idhudhaan</h2>
+              <p class="song-artists"><strong>Singers:</strong> Naresh Iyer &amp; Shashaa Tirupati</p>
+              <p class="song-music"><strong>Music by:</strong> Siddhu Kumar</p>
+              
+              <div class="music-card__status" id="musicStatus">
+                <span class="status-dot"></span>
+                <span id="statusText">Scan to automatically play via YouTube</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SCAN CODE & QR FORM -->
+          <div class="scan-section">
+            <div class="scan-bar-container" id="scanArea">
+              <div class="scan-beam" id="scanBeam"></div>
+              
+              <!-- Soundwave Graphic Barcode -->
+              <div class="soundwave-bar" aria-hidden="true">
+                <span class="sw-line sw-1"></span>
+                <span class="sw-line sw-2"></span>
+                <span class="sw-line sw-3"></span>
+                <span class="sw-line sw-4"></span>
+                <span class="sw-line sw-5"></span>
+                <span class="sw-line sw-6"></span>
+                <span class="sw-line sw-7"></span>
+                <span class="sw-line sw-8"></span>
+                <span class="sw-line sw-9"></span>
+                <span class="sw-line sw-10"></span>
+                <span class="sw-line sw-11"></span>
+                <span class="sw-line sw-12"></span>
+                <span class="sw-line sw-13"></span>
+                <span class="sw-line sw-14"></span>
+                <span class="sw-line sw-15"></span>
+                <span class="sw-line sw-16"></span>
+              </div>
+
+              <!-- Live QR Code for Phone Scanning -->
+              <div class="qr-box" title="Scan with your phone to open on YouTube">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&amp;data=https://youtu.be/7ydI06TnEJs" alt="QR Code to scan and play on YouTube" class="qr-img" width="70" height="70" />
+                <span class="qr-label">Scan Code 📱</span>
+              </div>
+            </div>
+
+            <!-- Scan & Play Action Buttons -->
+            <div class="scan-actions">
+              <button type="button" class="btn-scan" id="btnScanPlay">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                <span id="scanBtnText">Scan &amp; Play Song</span>
+              </button>
+
+              <button type="button" class="btn-lyrics" id="btnToggleLyrics">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+                <span id="lyricsBtnText">Show Lyrics</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- YOUTUBE PLAYER EMBED -->
+          <div class="player-wrapper" id="playerWrapper" style="display:none;">
+            <div class="player-header">
+              <span class="player-title">Now Playing: Idhudhaan (Naresh Iyer &amp; Shashaa Tirupati)</span>
+              <button type="button" class="btn-close-player" id="btnClosePlayer" title="Hide Video">&times;</button>
+            </div>
+            <div class="video-responsive">
+              <iframe id="ytIframe" src="" title="Idhudhaan - Naresh Iyer &amp; Shashaa Tirupati" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+          </div>
+
+          <!-- LYRICS DRAWER -->
+          <div class="lyrics-drawer" id="lyricsDrawer" style="display:none;">
+            <div class="lyrics-header">
+              <h3 class="lyrics-title">Idhudhaan — Song Lyrics</h3>
+              <span class="lyrics-credits">Singers: Naresh Iyer &amp; Shashaa Tirupati · Music: Siddhu Kumar</span>
+            </div>
+            <div class="lyrics-body">
+              <div class="lyric-block lyric-block--female">
+                <span class="singer-tag singer-tag--female">🌸 FEMALE PART</span>
+                <p>Idhudhaan idhudhaan idhudhaan<br>
+                Iruvarum kaana thudiththa naalo<br>
+                Idhudhaan idhudhaan idhudhaan<br>
+                Iruvarum sera thudiththa naalo</p>
+              </div>
+
+              <div class="lyric-block lyric-block--male">
+                <span class="singer-tag singer-tag--male">🎙️ MALE PART</span>
+                <p>Vizhi aadhil vizhuvaena<br>
+                Ini unnai viduvaena<br>
+                Viraludan ada viral kadathiya<br>
+                Kaadhala marappaena<br>
+                Udan varuvaena<br>
+                Uyir thoduvaena<br>
+                Ilai nuniyila oru thuliyena<br>
+                Thavikkiren sarithaana</p>
+              </div>
+
+              <div class="lyric-block lyric-block--duet">
+                <span class="singer-tag singer-tag--male">🎙️ MALE PART</span>
+                <p>Nenaikkum nodi ellaam<br>
+                Arugil irukkanum</p>
+                <span class="singer-tag singer-tag--female">🌸 FEMALE PART</span>
+                <p>Arugil irukka nee<br>
+                Irukki pidikkanum<br>
+                Unakkaai maruganum<br>
+                Enakkul uruganum uyirae…hmm…</p>
+              </div>
+
+              <div class="lyric-block lyric-block--male">
+                <span class="singer-tag singer-tag--male">🎙️ MALE PART</span>
+                <p>Un manasu<br>
+                Adam pidikkira kozhandha<br>
+                Adha en iduppil<br>
+                Naan sumanthida aasa<br>
+                Nee sirikka<br>
+                Ada ethukku nee marandha<br>
+                Adhu naan ketkkum mellisa…aaa..</p>
+              </div>
+
+              <div class="lyric-block lyric-block--male">
+                <span class="singer-tag singer-tag--male">🎙️ MALE PART</span>
+                <p>Unakkena vaazha<br>
+                Uyir yengudhae<br>
+                Un ninaivondrae<br>
+                Ennai thaangudhae</p>
+              </div>
+
+              <div class="lyric-block lyric-block--female">
+                <span class="singer-tag singer-tag--female">🌸 FEMALE PART</span>
+                <p>Edhilum neeyada<br>
+                Edhuvum neeyada<br>
+                Poda… ooo…oo…</p>
+              </div>
+
+              <div class="lyric-block lyric-block--female">
+                <span class="singer-tag singer-tag--female">🌸 FEMALE PART</span>
+                <p>Idhudhaan idhudhaan idhudhaan<br>
+                Iruvarum kaana thudiththa naalo<br>
+                Idhudhaan idhudhaan idhudhaan<br>
+                Iruvarum sera thudiththa naalo</p>
+              </div>
+
+              <div class="lyric-block lyric-block--duet">
+                <span class="singer-tag singer-tag--male">🎙️ MALE PART</span>
+                <p>Nenaikkum nodi ellaam<br>
+                Arugil irukkanum</p>
+                <span class="singer-tag singer-tag--female">🌸 FEMALE PART</span>
+                <p>Arugil irukka nee<br>
+                Irukki pidikkanum</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- PROCEED TO CUPID WISH BUTTON -->
+        <div class="frontpage__footer">
+          <button type="button" class="btn-enter-gift" id="btnEnterGift">
+            <span>Open Birthday Surprise 🏹 ♥</span>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+            </svg>
+          </button>
+          <p class="frontpage__hint">A Cupid arrow and a blooming tree of hearts await you</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- INTERACTIVE FILM SCENE -->
+  <main class="scene" id="mainScene">
+
+    <!-- The tree world (Act 4). One canvas; it stays transparent until the
+         intro hands off, then it draws its own warm sky + blossom tree. -->
+    <canvas id="tree" class="tree" aria-label="A blossom tree grows and blooms into a heart made of petals" role="img"></canvas>
+
+    <!-- ACT 1 — THE INVITATION (OPENING PAGE) ----------------------------------
+         A single beating heart on a warm field: tap it or draw Cupid's bow to fire. -->
+    <section class="hero" id="hero" aria-label="Draw the bow or tap the heart to open your card">
+      <div class="hero__bg" aria-hidden="true"></div>
+      <div class="hero__motes" id="motes" aria-hidden="true"></div>
+
+      <!-- OPENING PAGE GREETING: Happy Birthday Ammu -->
+      <p class="hero__eyebrow" id="eyebrow">Happy Birthday Ammu ♥</p>
+      <div class="hero__quote" id="heroQuote">
+        <span>❤️ &ldquo;You are not just my girlfriend, you are my whole world&hellip;&rdquo;</span>
+      </div>
+
+      <!-- THE TARGET — the heart the arrow flies to (GSAP animates .target) -->
+      <div class="targetWrap">
+        <div class="target" id="target" role="button" tabindex="0" aria-label="Tap to open the birthday surprise">
+          <span class="heart__glow" aria-hidden="true"></span>
+          <span class="target__heart" id="targetHeart">
+            <svg class="heart__svg" viewBox="0 0 100 92" aria-hidden="true">
+              <defs>
+                <radialGradient id="hg" cx="38%" cy="30%" r="80%">
+                  <stop offset="0%"  stop-color="#ffd9e4" />
+                  <stop offset="42%" stop-color="#ff6f97" />
+                  <stop offset="82%" stop-color="#d81e57" />
+                  <stop offset="100%" stop-color="#9d0f3e" />
+                </radialGradient>
+                <linearGradient id="hsheen" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"  stop-color="rgba(255,255,255,.85)" />
+                  <stop offset="34%" stop-color="rgba(255,255,255,0)" />
+                </linearGradient>
+              </defs>
+              <path d="M50 86.5C26 68 10.5 53.6 10.5 34.6 10.5 20.4 21 11 33.2 11c8.6 0 14.2 4.7 16.8 11.4C52.6 15.7 58.2 11 66.8 11 79 11 89.5 20.4 89.5 34.6 89.5 53.6 74 68 50 86.5Z" fill="url(#hg)" />
+              <path d="M50 86.5C26 68 10.5 53.6 10.5 34.6 10.5 20.4 21 11 33.2 11c8.6 0 14.2 4.7 16.8 11.4C52.6 15.7 58.2 11 66.8 11 79 11 89.5 20.4 89.5 34.6 89.5 53.6 74 68 50 86.5Z" fill="url(#hsheen)" opacity=".7" />
+              <ellipse cx="34" cy="30" rx="8.5" ry="5.4" fill="#fff" opacity=".72" style="mix-blend-mode:screen" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- THE BOW + ARROW — draw the string back, release to fire. The rig is
+           placed lower-left and rotated by JS to aim at the heart, so the shot
+           travels on a diagonal. A real control: role=button + keyboard drag. -->
+      <div class="archery" id="archery" role="button" tabindex="0"
+           aria-label="Draw the bow and release to send the arrow to the heart">
+
+          <!-- aim line, inside the rig so it points straight at the heart -->
+          <div class="aim" id="aim" aria-hidden="true"></div>
+
+          <!-- realistic recurve bow: wooden limbs, leather grip, a live string -->
+          <svg class="bow" id="bow" viewBox="0 0 460 300" aria-hidden="true">
+            <defs>
+              <linearGradient id="limb" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0"   stop-color="#4a2a1a" />
+                <stop offset=".18" stop-color="#6b3f24" />
+                <stop offset=".5"  stop-color="#8a5127" />
+                <stop offset=".82" stop-color="#6b3f24" />
+                <stop offset="1"   stop-color="#4a2a1a" />
+              </linearGradient>
+              <linearGradient id="limbHi" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="rgba(255,214,160,.8)" />
+                <stop offset="1" stop-color="rgba(255,214,160,0)" />
+              </linearGradient>
+              <linearGradient id="grip" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#2a1a10" />
+                <stop offset=".5" stop-color="#5a3822" />
+                <stop offset="1" stop-color="#2a1a10" />
+              </linearGradient>
+            </defs>
+            <!-- limb body (taper faked with two stacked strokes) -->
+            <path class="bow__limb" d="M34 96 C 118 168, 168 240, 230 252 C 292 240, 342 168, 426 96"
+                  fill="none" stroke="url(#limb)" stroke-width="13" stroke-linecap="round" />
+            <path class="bow__limbHi" d="M34 96 C 118 168, 168 240, 230 252 C 292 240, 342 168, 426 96"
+                  fill="none" stroke="url(#limbHi)" stroke-width="3" stroke-linecap="round" opacity=".7" />
+            <!-- recurve tip hooks -->
+            <path d="M34 96 C 22 82, 26 70, 40 66" fill="none" stroke="url(#limb)" stroke-width="8" stroke-linecap="round" />
+            <path d="M426 96 C 438 82, 434 70, 420 66" fill="none" stroke="url(#limb)" stroke-width="8" stroke-linecap="round" />
+            <!-- leather grip over the belly -->
+            <rect x="216" y="206" width="28" height="70" rx="9" fill="url(#grip)" />
+            <path d="M219 220h22 M219 236h22 M219 252h22" stroke="rgba(0,0,0,.35)" stroke-width="2" />
+            <!-- the string: two segments meeting at the nock (JS animates the nock).
+                 A warm taupe so the taut string actually reads against the cream. -->
+            <line class="bow__str" id="strL" x1="40" y1="70" x2="230" y2="96" stroke="#9a8068" stroke-width="2.2" stroke-linecap="round" />
+            <line class="bow__str" id="strR" x1="420" y1="70" x2="230" y2="96" stroke="#9a8068" stroke-width="2.2" stroke-linecap="round" />
+            <circle class="bow__serving" id="serving" cx="230" cy="96" r="4.5" fill="#6f5137" />
+          </svg>
+
+          <!-- the arrow: winged golden heart tip (Cupid), gold feather fletching -->
+          <svg class="arrow" id="arrow" viewBox="0 0 64 220" aria-hidden="true">
+            <defs>
+              <linearGradient id="shaft" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#4a2c14" />
+                <stop offset=".5" stop-color="#8a5a2c" />
+                <stop offset="1" stop-color="#3e2410" />
+              </linearGradient>
+              <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffe38c" />
+                <stop offset=".45" stop-color="#f4a626" />
+                <stop offset="1" stop-color="#a85f0e" />
+              </linearGradient>
+              <linearGradient id="feath" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ff7f9c" />
+                <stop offset=".5" stop-color="#e6396a" />
+                <stop offset="1" stop-color="#a8154a" />
+              </linearGradient>
+              <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffffff" />
+                <stop offset="1" stop-color="#ffe0c4" />
+              </linearGradient>
+            </defs>
+
+            <!-- shaft (dark wood so it reads against the cream) -->
+            <rect x="29.4" y="30" width="5.2" height="168" rx="2.6" fill="url(#shaft)" />
+
+            <!-- angel wings flanking the heart tip -->
+            <g class="arrow__wings">
+              <path class="wingL" d="M31 30 C 10 16, 2 20, 4 34 C 12 30, 20 32, 31 40 Z" fill="url(#wing)" stroke="rgba(196,132,58,.72)" stroke-width="1.2"/>
+              <path class="wingR" d="M33 30 C 54 16, 62 20, 60 34 C 52 30, 44 32, 33 40 Z" fill="url(#wing)" stroke="rgba(196,132,58,.72)" stroke-width="1.2"/>
+            </g>
+
+            <!-- golden heart arrowhead (Cupid's love arrow) -->
+            <path class="arrow__head" d="M32 12 C 30 7, 22 6.5, 21.5 13 C 21 18, 27 22, 32 27 C 37 22, 43 18, 42.5 13 C 42 6.5, 34 7, 32 12 Z" fill="url(#gold)" stroke="#a5701a" stroke-width=".8" />
+            <ellipse cx="27" cy="13" rx="2.6" ry="1.7" fill="#fff" opacity=".8" style="mix-blend-mode:screen" />
+
+            <!-- gold feather fletching -->
+            <g class="arrow__fletch">
+              <path d="M32 150 C 16 156, 10 178, 15 200 C 24 194, 30 184, 32 176 Z" fill="url(#feath)" />
+              <path d="M32 150 C 48 156, 54 178, 49 200 C 40 194, 34 184, 32 176 Z" fill="url(#feath)" opacity=".92" />
+              <path d="M28 160l4 3 M26 170l6 3 M25 180l7 3" stroke="rgba(130,12,48,.45)" stroke-width="1" />
+              <path d="M36 160l-4 3 M38 170l-6 3 M39 180l-7 3" stroke="rgba(130,12,48,.45)" stroke-width="1" />
+            </g>
+            <!-- nock -->
+            <path d="M29 200 L32 205 L35 200" fill="none" stroke="#c9a25a" stroke-width="2" stroke-linecap="round"/>
+            <!-- invisible tip marker: JS measures it to land the head on the heart -->
+            <circle id="tip" cx="32" cy="9" r="0.6" fill="none" />
+          </svg>
+      </div>
+
+      <p class="hero__hint" id="hint">pull the bow &middot; or tap the heart</p>
+    </section>
+
+    <!-- ACT 2 — THE FLOOD -----------------------------------------------------
+         The heart bursts into this circle at its landing point, and it swallows
+         the frame in rose. Same trick as the intro dot: no cross-fade anywhere,
+         the colour just arrives. -->
+    <div class="flood" id="flood" aria-hidden="true"></div>
+
+    <!-- ACT 3 — THE WISH (kinetic type on the flood) --------------------------
+         Lives inside the flood's own colour, revealed by it. Every glyph hinges
+         up out of its mask — nothing fades. -->
+    <div class="field" id="field" aria-hidden="true">
+      <div class="blob blob--1"></div>
+      <div class="blob blob--2"></div>
+      <div class="blob blob--3"></div>
+      <div class="fgrid" id="fgrid"></div>
+      <div class="fvignette"></div>
+
+      <div class="camera" id="camera">
+        <p class="kEyebrow" id="kEyebrow">make a wish&hellip;</p>
+        <h2 class="headline" id="headline">
+          <span class="hl__line"><span class="mask"><span class="hl__word" id="wLine1">Happy</span></span></span>
+          <span class="hl__line"><span class="mask"><span class="hl__word" id="wLine2">Birthday</span></span></span>
+        </h2>
+        <svg class="uline" id="uline" viewBox="0 0 300 26" fill="none" aria-hidden="true">
+          <path class="uline__path" d="M8 16C56 7 132 4 178 6c30 1 78 5 114 12-40 3-108 4-176 3"
+                stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <p class="kSub" id="kSub">to Kaviya — someone worth celebrating</p>
+      </div>
+
+      <div class="bar bar--top" id="barTop"></div>
+      <div class="bar bar--bot" id="barBot"></div>
+    </div>
+
+    <!-- The gold light that bridges the rose wish into the dawn of the tree. -->
+    <div class="bloom" id="bloom" aria-hidden="true"></div>
+
+    <!-- ACT 4 — THE HAND-LETTERED WISH (over the tree) — MAIN PAGE: KAVIYA -->
+    <div class="wish" id="wish" aria-hidden="true">
+      <p class="wish__eyebrow" id="wEyebrow">and&hellip; make it count</p>
+      <div class="wish__heroWrap"><h1 class="wish__hero" id="wHero">Happy Birthday Kaviya</h1></div>
+      <span class="wish__rule" id="wRule"></span>
+      <p class="wish__sub" id="wSub">here&rsquo;s to a year that blooms, dearest Kaviya</p>
+
+      <!-- SURPRISE GIFT LOVE QUOTE CARD -->
+      <div class="wish__love-card" id="wishLoveCard">
+        <div class="wish__love-badge">❤️ 1. You Are My Everything</div>
+        <div class="wish__love-body">
+          <p>You are not just my girlfriend, you are my whole world. ❤️</p>
+          <p>Your happiness means more to me than my own. 🥹</p>
+          <p>Even when everything goes wrong, your love gives me strength.</p>
+          <p>I don't need a perfect life, I just need you beside me.</p>
+          <p class="wish__love-highlight">Because my heart has chosen you, forever and always. 💍❤️</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Play the film again once it has settled. -->
+    <div class="act4-actions">
+      <button class="love-letter-btn" id="btnTreeLoveLetter" type="button" hidden>
+        <span>💌 Love Note</span>
+      </button>
+      <button class="replay" id="replay" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="15" height="15">
+          <path d="M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z" fill="currentColor" />
+        </svg>
+        Again
+      </button>
+    </div>
+
+    <!-- One lens over the whole film: vignette + fine grain. -->
+    <div class="grade" aria-hidden="true">
+      <div class="grade__vignette"></div>
+      <div class="grade__grain"></div>
+    </div>
+  </main>
+
+  <!-- Personalization Modal -->
+  <div class="modal-backdrop" id="personalizeModal" hidden aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Make It Personal 💝</h2>
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <p class="modal-desc">Customize this birthday experience for someone special.</p>
+      <form id="personalizeForm">
+        <div class="form-group">
+          <label for="nameInput" class="form-label">Recipient's Name</label>
+          <input type="text" id="nameInput" class="form-input" placeholder="e.g. Jessica, Mom, Alex" maxlength="30" autocomplete="off" />
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="modal-btn modal-btn--primary" id="saveNameBtn">Save &amp; Preview</button>
+          <button type="button" class="modal-btn modal-btn--share" id="copyShareBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+              <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+            </svg>
+            Copy Gift Link
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification for feedback -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- Accessible equivalent for reduced-motion + screen readers. -->
+  <p class="sr-only">Happy Birthday. Here&rsquo;s to a wonderful year ahead.</p>
+
+  <script type="module" src="./birthday.js"></script>
+</body>
+</html>
